@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.nbi
+*.nbc
+.venv/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+# local data, if someone points --data-dir / --cache-dir inside the repository
+/data/
+/cache/
+surface-enhancer.json
+# internal progress notes (French), not part of the project
+JOURNAL_FR.md
+*.log

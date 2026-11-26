@@ -1,0 +1,17 @@
+# Versions the tool was developed and tested with (Python 3.12, Windows 11). Older versions may work; they were not tried.
+numpy==2.5.3
+scipy==1.18.1
+numba==0.68.0
+opencv-python-headless==5.0.0.93
+tifffile==2026.9.20
+imagecodecs==2026.8.16      # lets tifffile read compressed TIFFs (segments written with LZW)
+pillow==12.3.0
+zarr==3.4.1
+numcodecs==0.16.5
+fsspec==2026.9.0            # https:// volumes (with aiohttp)
+aiohttp==3.14.4
+s3fs==2026.9.0              # s3:// volumes
+psutil==7.2.2               # optional: port check on every address, memory guard
+
+# optional, only for `python -m surface_enhancer flatten`:  torch (CPU build is enough)
+# tests:  pytest==8.3.5  (and aiohttp, above, for the headless-Chrome journey)

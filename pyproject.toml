@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "surface-enhancer"
+version = "1.0.0"
+description = "Fix a papyrus segment (tifxyz surface) by hand, with the scan under your eyes; round trip with Volume Cartographer (VC3D)."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Vincentl065" }]
+requires-python = ">=3.10"
+# Tested versions are pinned in requirements.txt; the lower bounds below are the tested versions, not known minimums.
+dependencies = [
+    "numpy", "scipy", "numba", "opencv-python-headless", "tifffile", "imagecodecs", "pillow",
+    "zarr>=3", "numcodecs", "fsspec", "aiohttp", "s3fs", "psutil",
+]
+
+[project.urls]
+Repository = "https://github.com/vincentl065/surface-enhancer"
+Issues = "https://github.com/vincentl065/surface-enhancer/issues"
+
+[project.optional-dependencies]
+flatten = ["torch"]
+test = ["pytest", "aiohttp"]
+
+[project.scripts]
+surface-enhancer = "surface_enhancer.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["surface_enhancer*"]
+
+[tool.setuptools.package-data]
+surface_enhancer = ["web/*", "web/scrolls/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider"

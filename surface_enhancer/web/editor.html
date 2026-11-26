@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surface Enhancer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%2314120e%27/%3E%3Cpath d=%27M2 10 Q5 4 8 9 T14 7%27 stroke=%27%23E69F00%27 stroke-width=%272%27 fill=%27none%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="panneau.css">
+<link rel="stylesheet" href="fini.css">
+</head>
+<body class="editeur">
+<div id="app">
+  <aside id="panneau">
+    <div class="tete">
+      <div class="ligne serre"><a id="retour" href="./" target="_top" title="Back to the list of segments">← All segments</a><span class="caps pousse">Surface Enhancer</span></div>
+      <h1 id="titre">…</h1>
+      <div class="ligne serre">
+        <div id="sauve" title="Every gesture is written to disk right away (journal + versioned copy). You can close the tab at any time.">loading…</div>
+        <button id="aideBtn" class="pousse" title="Mouse gestures, keys, what the buttons do (? key)"><b>?</b> Help</button>
+      </div>
+      <div id="avis" class="avis" hidden></div>
+    </div>
+
+    <div id="panneauCorps"></div>
+    <p class="doux petit">Ink shown here was predicted on the original surface. To read ink on the retouched surface, export it (or run <code>render</code>) and use your own ink model.</p>
+  </aside>
+
+  <main>
+    <div id="vues">
+      <div id="zonePage">
+        <canvas id="page" tabindex="0" aria-label="Flat page of the segment"></canvas>
+        <canvas id="gl" hidden aria-label="3D view of the surface"></canvas>
+        <div id="info3d" hidden>
+          <b>3D view</b> · drag: rotate · wheel: zoom · right-click + drag: pan · <b>click: back to 2D at this spot</b><br>
+          <span class="l3"><i class="rond"></i> round orange dots: neighbouring sheet above</span>
+          <span class="l3"><i class="carre"></i> small blue squares: neighbouring sheet below</span>
+          <span class="l3">translucent ribbons: the two scan sections (↔ and ↕)</span><br>
+          <label title="Whole segment (lighter mesh), or only a full-resolution patch around the point"><input id="v3dTout" type="checkbox" checked> whole segment</label>
+          <label title="Dots of the sheets just above and below (patch only)"><input id="v3dVoisines" type="checkbox"> neighbouring sheets</label>
+          <label><input id="v3dCoupes" type="checkbox" checked> sections</label>
+          <label title="Size of the full-resolution patch (moving it switches to the patch)">patch size <input id="v3dTaille" type="range" min="30" max="150" step="10" value="80"></label>
+        </div>
+        <div id="echelle"></div>
+        <div id="coord"></div>
+        <div id="charge" hidden>loading…</div>
+        <div id="outilInfo"></div>
+      </div>
+      <div id="coupes">
+        <section class="coupe" data-axe="u">
+          <header><span class="sym su">↔</span> Section across the width <span class="doux">(solid orange line on the page)</span><span class="droite" id="infoU"></span></header>
+          <canvas id="coupeU"></canvas>
+        </section>
+        <section class="coupe" data-axe="v">
+          <header><span class="sym sv">↕</span> Section along the height <span class="doux">(blue dashes on the page; top of the page on the left)</span><span class="droite" id="infoV"></span></header>
+          <canvas id="coupeV"></canvas>
+        </section>
+        <div class="noteCoupe">
+          <b>In a section:</b> grab the <b>orange line</b> (the surface) and drag it, or click where the sheet really runs. The white squares are your points: drag them again, right-click to remove one, <b>Enter</b> to finish.
+          The dashed white line is the original surface. Each section has its own view: wheel to zoom, right-click + drag to move, ⌖ Recenter to come back. <span id="epingle"></span>
+        </div>
+      </div>
+    </div>
+    <footer id="aide"></footer>
+  </main>
+</div>
+
+<!-- empty state: no segment, segment not prepared, server stopped -->
+<div id="vide" class="plein" hidden>
+  <div class="boite">
+    <div class="caps">Surface Enhancer</div>
+    <h1 id="videTitre">This segment cannot be opened</h1>
+    <p id="videTexte"></p>
+    <p><a class="bouton principal" href="./" target="_top">← Back to the list of segments</a> <button id="videReessayer">Try again</button></p>
+  </div>
+</div>
+
+<!-- help -->
+<div id="aideDlg" class="dialogue" hidden role="dialog" aria-modal="true" aria-labelledby="aideTitre">
+  <div class="boite large">
+    <header><h1 id="aideTitre">How it works</h1><button class="fermer" data-fermer title="Close (Esc)">✕ Close</button></header>
+    <div class="colonnes">
+      <section>
+        <h2>The idea</h2>
+        <p>The left view is your segment laid <b>flat</b>. The right views are two <b>sections of the scan</b> through the point under the mouse, 40 voxels above and below the surface. The <b>orange line</b> is the surface; the papyrus sheets are the bright bands. Where the line leaves its sheet, pull it back.</p>
+        <p>The original surface is never modified. Every gesture is saved at once and can be undone without limit.</p>
+        <p>In the left panel, every control has an <b>ⓘ</b>: hover it for what it does, how to use it and a small animation; click it to keep the card open.</p>
+        <h2>Mouse</h2>
+        <table class="touches">
+          <tr><td>Page</td><td>move</td><td>the two sections follow</td></tr>
+          <tr><td>Page</td><td>right-click</td><td>pin the sections here; right-click again (or Esc) releases them</td></tr>
+          <tr><td>Page</td><td>wheel · right-click + drag (or Space)</td><td>zoom · pan</td></tr>
+          <tr><td>Page</td><td>Shift + wheel</td><td>depth of the page</td></tr>
+          <tr><td>Section</td><td>drag the orange line</td><td>the surface follows, smoothly, over the “reach” on each side</td></tr>
+          <tr><td>Section</td><td>click elsewhere</td><td>“the surface runs here”; white squares = your points (drag again, right-click removes, Enter finishes)</td></tr>
+          <tr><td>Section</td><td>wheel · right-click + drag · ⌖ Recenter</td><td>zoom this section · move it in its window · put it back on the point</td></tr>
+          <tr><td>3D</td><td>drag · wheel · click</td><td>rotate · zoom · back to 2D at that spot</td></tr>
+        </table>
+        <h2>Tools (keys)</h2>
+        <table class="touches">
+          <tr><td><kbd>R</kbd></td><td>Look</td><td>nothing is changed</td></tr>
+          <tr><td><kbd>A</kbd></td><td>Magnet</td><td>snaps to the nearest sheet under the brush, never further than “Magnet: at most”</td></tr>
+          <tr><td><kbd>D</kbd> <kbd>X</kbd></td><td>Edge magnets</td><td>same, then sits N voxels from the core of the sheet (top / bottom side); Shift = other side</td></tr>
+          <tr><td><kbd>B</kbd></td><td>Brush</td><td>up 1 voxel per pass; Shift = down</td></tr>
+          <tr><td><kbd>F</kbd></td><td>Shift one sheet</td><td>paint a region, then <kbd>PgUp</kbd> / <kbd>PgDn</kbd>: the region jumps to the sheet above / below</td></tr>
+          <tr><td><kbd>M</kbd> <kbd>G</kbd></td><td>Mark / erase</td><td>problem areas: kept, scored separately</td></tr>
+        </table>
+      </section>
+      <section>
+        <h2>Other keys</h2>
+        <table class="touches">
+          <tr><td><kbd>Tab</kbd></td><td colspan="2">2D ⇄ 3D at the same spot</td></tr>
+          <tr><td><kbd>N</kbd></td><td colspan="2">go to the worst tile (again = next one)</td></tr>
+          <tr><td><kbd>S</kbd> <kbd>Q</kbd> <kbd>Z</kbd></td><td colspan="2">score map · fibre score map · marked areas</td></tr>
+          <tr><td><kbd>E</kbd> <kbd>P</kbd></td><td colspan="2">next ink layer · dots of the detected sheets</td></tr>
+          <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td colspan="2">depth of the page (−8 … +8 voxels)</td></tr>
+          <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td colspan="2">reach / brush size</td></tr>
+          <tr><td><kbd>Ctrl+Z</kbd> <kbd>Ctrl+Y</kbd></td><td colspan="2">undo / redo, unlimited</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td colspan="2">finish the line · cancel a preview · back to Look · release the pin</td></tr>
+          <tr><td><kbd>?</kbd></td><td colspan="2">this help</td></tr>
+        </table>
+        <h2>Automatic buttons</h2>
+        <p>Each one first computes a <b>preview</b> (nothing is written): numbers in the panel and a map on the page — orange hatching ╱ = moves towards the top of the section, blue hatching ╲ = towards the bottom, solid = 4 voxels or more (a change of sheet), white dots = proposed then refused. <b>Apply</b> writes it as one gesture (one Ctrl+Z). <b>Follow the sheet</b> and <b>Remove steps</b> start from the pinned point: click a spot where the surface is right first.</p>
+        <h2>The score</h2>
+        <p>0–100 per tile of 8 grid nodes: distance from the surface to the nearest sheet (35 %), sharpness of that sheet (20 %), steps between neighbouring nodes (25 %), stretch and shear of the grid (10 %), a neighbouring sheet too close (10 %). On the map: blank = good, dots = fair, hatching = weak, cross-hatching = bad, with the number and a letter for the biggest penalty (D distance, N sharpness, M step, G grid, V neighbour). The score helps you find places to look at; your eye on the sections decides.</p>
+        <h2>Export, VC3D, ink</h2>
+        <p><b>Export / download…</b> gives a zip (tifxyz segment + offset field + journal) or writes a <b>new</b> segment into your VC3D volume package. A retouch is limited to ± 32 voxels around the original surface; to go further, export, then prepare the export as a new segment.</p>
+        <p><b>Re-read the ink:</b> this tool does not ship an ink model. Render the layers of the retouched surface (<code>python -m surface_enhancer render NAME</code>), run your own model, then show its output here with <code>ink-layer NAME "Label=prediction.tif"</code>.</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- export -->
+<div id="exportDlg" class="dialogue" hidden role="dialog" aria-modal="true" aria-labelledby="exportTitre">
+  <div class="boite">
+    <header><h1 id="exportTitre">Export the retouched surface</h1><button class="fermer" data-fermer title="Close (Esc)">✕ Close</button></header>
+    <p id="exportResume" class="doux"></p>
+    <fieldset id="exportGrille" hidden>
+      <legend>Grid of the exported segment</legend>
+      <label class="coche"><input type="radio" name="grille" value="original" checked> <span id="grilleOriginale">same node layout as your segment</span></label>
+      <label class="coche"><input type="radio" name="grille" value="working"> <span id="grilleTravail">working grid</span></label>
+    </fieldset>
+    <label class="champ"><span>Id of the new segment <span class="doux">(optional; folder name = id)</span></span><input id="exportId" type="text" spellcheck="false" autocomplete="off"></label>
+
+    <h2>1 · Download</h2>
+    <div class="ligne">
+      <button id="dlBundle" class="principal" title="One zip: the tifxyz segment, plus the offset field and the journal of gestures">⬇ Download .zip <span class="doux">(segment + offset field + journal)</span></button>
+    </div>
+    <div class="ligne petit"><span class="doux">or only:</span> <button id="dlSegment">segment (tifxyz zip)</button><button id="dlOffset">offset field (.npy)</button><button id="dlJournal">journal (.jsonl)</button></div>
+
+    <h2>2 · Write into a VC3D volume package <span class="doux">(as a new segment)</span></h2>
+    <label class="champ"><span>Segments folder <span class="doux">(the <code>paths/</code> folder of the package)</span></span><input id="exportDossier" type="text" spellcheck="false" autocomplete="off" placeholder="/path/to/scroll.volpkg/paths"></label>
+    <div class="ligne"><button id="exportVc">Write the new segment there</button><button id="exportLocal" title="Keeps a copy in the exports folder of this segment, inside the Surface Enhancer data folder">Save in the exports folder instead</button></div>
+    <div id="exportResultat" class="carte petit" hidden role="status" aria-live="polite"></div>
+    <p class="doux petit">The original segment is never touched and an existing folder is never overwritten.</p>
+  </div>
+</div>
+
+<script src="panneau.js"></script>
+<script src="vue3d.js"></script>
+<script src="app.js"></script>
+<script src="editor_extra.js"></script>
+</body>
+</html>

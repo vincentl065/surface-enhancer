@@ -1,0 +1,56 @@
+{
+  "multiscales": [
+    {
+      "version": "0.4",
+      "name": "sample_scroll1",
+      "axes": [
+        {
+          "name": "z",
+          "type": "space",
+          "unit": "micrometer"
+        },
+        {
+          "name": "y",
+          "type": "space",
+          "unit": "micrometer"
+        },
+        {
+          "name": "x",
+          "type": "space",
+          "unit": "micrometer"
+        }
+      ],
+      "datasets": [
+        {
+          "path": "0",
+          "coordinateTransformations": [
+            {
+              "type": "scale",
+              "scale": [
+                7.91,
+                7.91,
+                7.91
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "source": {
+    "volume": "https://dl.ash2txt.org/full-scrolls/Scroll1/PHercParis4.volpkg/volumes_zarr_standardized/54keV_7.91um_Scroll1A.zarr",
+    "region_zyx": [
+      [
+        4892,
+        2590,
+        3263
+      ],
+      [
+        5183,
+        2805,
+        3557
+      ]
+    ],
+    "note": "sparse copy: only the voxels within \u00b1 48 voxels of the sample surface are stored; everything else reads as 0"
+  }
+}

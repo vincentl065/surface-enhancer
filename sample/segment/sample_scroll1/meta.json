@@ -1,0 +1,24 @@
+{
+    "type": "seg",
+    "uuid": "sample_scroll1",
+    "format": "tifxyz",
+    "scale": [
+        0.0625,
+        0.0625
+    ],
+    "bbox": [
+        [
+            3286.455810546875,
+            2639.8701171875,
+            4906.02099609375
+        ],
+        [
+            3524.56201171875,
+            2762.423583984375,
+            5166.13623046875
+        ]
+    ],
+    "name": "sample_scroll1",
+    "volume_id": "20230205180739",
+    "source": "17 × 17 nodes (one pixel out of 16) cut out of the public Scroll 1 segment 20230702185753, rows 8107–8363, columns 11297–11553 of its flat page"
+}

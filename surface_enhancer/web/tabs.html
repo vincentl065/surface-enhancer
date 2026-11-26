@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surface Enhancer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%2314120e%27/%3E%3Cpath d=%27M2 10 Q5 4 8 9 T14 7%27 stroke=%27%23E69F00%27 stroke-width=%272%27 fill=%27none%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+/* Several segments open at once, one tab each, plus “New tab” start tabs. Each tab lives in its own frame and keeps its state. */
+html, body.onglets { margin: 0; height: 100%; overflow: hidden; }
+body.onglets { --panneau: 344px; position: relative; }      /* the left panel of the editor runs from the very top; the tabs sit over the page and the sections only */
+#barre { display: flex; align-items: stretch; gap: 2px; background: var(--fond); border-bottom: 1px solid var(--filet-fort); padding: 4px 6px 0; min-width: 0; position: absolute; z-index: 5; top: 0; left: var(--panneau); right: 0; height: 34px; }
+#barre .marque { display: flex; align-items: center; gap: 7px; padding: 0 10px 4px 4px; color: var(--pale); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; text-decoration: none; white-space: nowrap; }
+#barre .marque:hover { color: var(--accent-2); }
+#liste { display: flex; gap: 2px; min-width: 0; overflow: hidden; }
+.onglet { display: flex; align-items: center; min-width: 70px; max-width: 240px; flex: 0 1 auto; background: var(--surface); border: 1px solid var(--filet); border-bottom: 0; border-radius: 7px 7px 0 0; color: var(--doux); }
+.onglet .nom { flex: 1; min-width: 0; background: none; border: 0; border-radius: 0; color: inherit; padding: 4px 4px 4px 11px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: inherit; cursor: pointer; }
+.onglet .nom small { color: var(--pale); margin-left: 6px; font-size: .74rem; }
+.onglet .x { flex: none; width: 22px; height: 22px; padding: 0; margin-right: 4px; border: 0; border-radius: 50%; background: none; color: inherit; font-size: 15px; line-height: 20px; cursor: pointer; }
+.onglet .x:hover { background: var(--filet-fort); color: var(--encre); }
+.onglet:hover { color: var(--encre); }
+.onglet.actif { background: var(--surface-2); color: var(--encre); border-color: var(--accent); box-shadow: inset 0 3px 0 var(--accent); font-weight: 600; }
+#plus { flex: none; align-self: center; margin: 0 0 4px 4px; width: 26px; height: 26px; padding: 0; border-radius: var(--rayon); font-size: 17px; line-height: 22px; }
+#cadres { position: absolute; inset: 0; }
+#cadres iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; visibility: hidden; background: var(--fond); }
+#cadres iframe.actif { visibility: visible; }
+</style>
+<link rel="stylesheet" href="fini.css">
+</head>
+<body class="onglets">
+<nav id="barre" aria-label="Open segments">
+  <div id="liste" role="tablist"></div>
+  <button id="plus" title="New tab: open or add a segment">+</button>
+</nav>
+<div id="cadres"></div>
+<script src="tabs.js"></script>
+</body>
+</html>

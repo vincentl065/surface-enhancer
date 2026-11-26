@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surface Enhancer — segments</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%2314120e%27/%3E%3Cpath d=%27M2 10 Q5 4 8 9 T14 7%27 stroke=%27%23E69F00%27 stroke-width=%272%27 fill=%27none%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="fini.css">
+</head>
+<body class="accueil">
+<header class="bandeau">
+  <div>
+    <div class="caps">Surface Enhancer <span id="version"></span></div>
+    <h1>Fix a papyrus segment by hand, with the scan under your eyes</h1>
+  </div>
+  <div class="pousse ligne">
+    <button id="aideBtn" title="What this tool does, in one minute"><b>?</b> How it works</button>
+  </div>
+</header>
+
+<main class="page">
+  <div id="hors" class="avis" hidden role="alert"></div>
+
+  <section class="bloc" aria-labelledby="tSeg">
+    <div class="ligne"><h2 id="tSeg">Your segments</h2><span id="nSeg" class="doux"></span></div>
+    <div id="jobs"></div>
+    <div id="segments" class="liste"></div>
+    <div id="segVide" class="videBloc" hidden>
+      <p><b>No segment yet.</b> Add one below (upload the zip of a tifxyz folder, or open a VC3D volume package).</p>
+      <p id="echantillon" hidden>New here? <button id="essai" class="principal">Try the tiny built-in sample</button> <span class="doux">— a 2 mm piece of Scroll 1 (PHerc. Paris 4), nothing to download, ready in a few seconds.</span></p>
+    </div>
+  </section>
+
+  <section class="bloc ajout" aria-labelledby="tAjout">
+    <h2 id="tAjout">Add a segment</h2>
+    <p class="doux">Three steps: pick the scroll, give your segment, press Prepare.</p>
+    <div class="pas"><span class="num">1</span><div class="corps">
+      <h3>Which scroll?</h3>
+      <label class="champ"><span>Pick the scan the segment was traced on</span><select id="rouleau"><option value="">choose a scroll…</option></select></label>
+      <div id="volumeLibre" hidden>
+        <label class="champ"><span>Address of the scan: a local <code>.zarr</code> folder, an <code>https://</code> URL or <code>s3://…</code></span>
+          <input id="volume" type="text" spellcheck="false" autocomplete="off" placeholder="https://… or s3://… or /data/volume.zarr"></label>
+        <div class="ligne"><button id="verifier">Check this address</button></div>
+      </div>
+      <div id="volumeEtat" class="etat" hidden role="status" aria-live="polite"></div>
+    </div></div>
+    <div class="pas"><span class="num">2</span><div class="corps">
+      <h3>Which segment?</h3>
+      <div class="onglets" role="tablist"><button id="ongletZip" role="tab" class="actif" aria-selected="true">Choose or drop it</button><button id="ongletChemin" role="tab" aria-selected="false">Type its path</button></div>
+      <div id="paneZip">
+        <div id="depot" class="depot grand" tabindex="0" role="group" aria-label="Segment to add">
+          <input id="fichier" type="file" accept=".zip,application/zip" hidden>
+          <input id="dossierIn" type="file" webkitdirectory hidden>
+          <span><b>Drop your segment folder here</b> (or a .zip of it)</span>
+          <span class="choixDepot"><button id="choisirDossier" type="button" class="principal">Choose the folder…</button><button id="choisirZip" type="button">Choose a .zip…</button></span>
+          <span class="doux">A segment is the folder that holds <code>x.tif</code>, <code>y.tif</code>, <code>z.tif</code> and <code>meta.json</code>. Only these files are read, and they stay on this computer.</span>
+        </div>
+        <details class="ouTrouver">
+          <summary>Where is my segment?</summary>
+          <ul>
+            <li><b>You traced it in VC3D:</b> it is a folder inside your volume package, <code>&lt;your scroll&gt;.volpkg/paths/&lt;segment id&gt;/</code> (also <code>traces/</code> or <code>export/</code>). Choose that folder; or open the whole package below, under “I use VC3D”.</li>
+            <li><b>You downloaded a published segment:</b> on the Vesuvius Challenge data server it is the <code>…/segments/&lt;id&gt;/mesh/…tifxyz/</code> folder of the scroll. Download that folder (four small files), then choose it here. Take the one placed on the scan you picked in step 1.</li>
+            <li><b>You only have an .obj or a .ppm:</b> convert it to tifxyz with the VC3D tools first (<code>vc_obj2tifxyz</code>).</li>
+            <li><b>Nothing at hand?</b> The built-in sample at the top of this page opens in a few seconds.</li>
+          </ul>
+        </details>
+      </div>
+      <div id="paneChemin" hidden>
+        <label class="champ"><span>Path of the segment folder on this computer</span><input id="chemin" type="text" spellcheck="false" autocomplete="off" placeholder="/data/scroll.volpkg/paths/20240101123456"></label>
+        <button id="inspecter">Use this folder</button>
+      </div>
+      <div id="surfaceEtat" class="etat" hidden role="status" aria-live="polite"></div>
+    </div></div>
+    <div class="pas"><span class="num">3</span><div class="corps">
+      <h3>Prepare</h3>
+      <div id="devis" class="etat" hidden></div>
+      <div class="ligne"><button id="preparer" class="principal gros" disabled>Prepare this segment — first choose the scroll (step 1), then choose your segment (step 2)</button><span id="preparerPourquoi" class="petit"></span></div>
+      <details class="avance"><summary>Advanced options (name, mirror, voxel size)</summary>
+        <label class="champ"><span>Name in Surface Enhancer <span class="doux">(filled in for you)</span></span><input id="nom" type="text" spellcheck="false" autocomplete="off" maxlength="96" placeholder="my_segment"></label>
+        <label class="coche" id="densifierLigne" hidden><input id="densifier" type="checkbox" checked> <span id="densifierTexte">resample the grid to one node every 4 voxels before retouching</span></label>
+        <label class="coche"><input id="miroirOpt" type="checkbox"> show the page mirrored left-right <span class="doux">(can be changed later)</span></label>
+        <label class="champ court"><span>Voxel size, µm <span class="doux">(only if it is not in the volume name)</span></span><input id="um" type="text" inputmode="decimal" placeholder="auto"></label>
+      </details>
+    </div></div>
+  </section>
+
+  <details class="bloc" id="blocVc">
+    <summary><h2 id="tVc" style="display:inline">I use VC3D: open a volume package instead</h2></summary>
+    <p class="doux">A <code>.volpkg</code> folder (with <code>volumes/</code> and <code>paths/</code>), a VC3D project file (<code>.json</code>), or just a folder of segments. Nothing is modified in it: a retouched segment is written back as a <b>new</b> segment when you export.</p>
+      <label class="champ"><span>Path on this computer</span><input id="volpkg" type="text" spellcheck="false" autocomplete="off" placeholder="/data/Scroll1.volpkg"></label>
+      <div class="ligne"><button id="ouvrirVolpkg">Open</button><span id="recents" class="petit"></span></div>
+      <div id="volpkgEtat" class="etat" hidden role="status" aria-live="polite"></div>
+      <div id="volpkgVue" hidden>
+        <h3 id="volpkgNom"></h3>
+        <div class="champ"><span>Volume to read the scan from</span><select id="volpkgVolume"></select></div>
+        <div class="ligne"><input id="filtre" type="search" placeholder="filter the segments…" aria-label="Filter the segments"><span id="nVc" class="doux petit"></span></div>
+        <div id="volpkgSegments" class="liste dense"></div>
+      </div>
+  </details>
+
+  <footer class="pied doux petit">
+    <span id="dossiers"></span><br>
+    Local tool: the page talks only to the server on this computer. Every gesture is saved at once; the original surface is never modified.
+  </footer>
+</main>
+
+<div id="aideDlg" class="dialogue" hidden role="dialog" aria-modal="true" aria-labelledby="aideTitre">
+  <div class="boite">
+    <header><h1 id="aideTitre">How it works</h1><button class="fermer" data-fermer title="Close (Esc)">✕ Close</button></header>
+    <ol>
+      <li><b>Add a segment.</b> A segment is a tifxyz folder (the format of Volume Cartographer / VC3D). Give the scan volume it was traced on.</li>
+      <li><b>Preload, once.</b> The scan is read along the normal of the surface, 40 voxels above and below, and stored as a “straightened block” (about 81 bytes per pixel of the flat page). After that, nothing is read from the scan again: page, sections, 3D and scores are instant.</li>
+      <li><b>Retouch.</b> In the editor, the flat page is on the left and two sections of the scan on the right. Drag the orange line onto the sheet, or let the magnet do it. Scores show where to look. Undo is unlimited.</li>
+      <li><b>Export.</b> Download a zip (tifxyz + offset field + journal), or write a new segment into your VC3D volume package. The original is never modified.</li>
+    </ol>
+    <p class="doux">Grids coarser than 8 voxels between nodes (VC3D traces are often at 20, whole-scroll sheets at 16) are resampled to 4 voxels for the retouch; the export can give back the original node layout.</p>
+    <p class="doux">Command line: <code>python -m surface_enhancer --help</code>. Documentation: the <code>docs/</code> folder of the project.</p>
+  </div>
+</div>
+
+<div id="supprDlg" class="dialogue" hidden role="dialog" aria-modal="true" aria-labelledby="supprTitre">
+  <div class="boite">
+    <header><h1 id="supprTitre">Remove a segment</h1><button class="fermer" data-fermer title="Close (Esc)">✕ Close</button></header>
+    <p id="supprTexte"></p>
+    <label class="champ"><span>Type the name of the segment to confirm</span><input id="supprNom" type="text" spellcheck="false" autocomplete="off"></label>
+    <div class="ligne"><button id="supprOk" disabled>Remove it</button><button data-fermer>Keep it</button></div>
+    <div id="supprEtat" class="etat" hidden></div>
+  </div>
+</div>
+
+<script src="home.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "segment": "segment/sample_scroll1",
+  "volume": "volume/sample_scroll1.zarr",
+  "voxel_um": 7.91,
+  "scroll": "Scroll 1 (PHerc. Paris 4)",
+  "volume_source": "https://dl.ash2txt.org/full-scrolls/Scroll1/PHercParis4.volpkg/volumes_zarr_standardized/54keV_7.91um_Scroll1A.zarr",
+  "segment_source": "https://dl.ash2txt.org/full-scrolls/Scroll1/PHercParis4.volpkg/paths/20230702185753/",
+  "window": {
+    "row": 8107,
+    "col": 11297,
+    "nodes": 17,
+    "step_px": 16
+  }
+}
